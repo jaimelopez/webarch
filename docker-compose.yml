@@ -1,0 +1,80 @@
+version: '2'
+services:
+
+  # proxy
+  varnish:
+    restart: always
+    build: ./environment/varnish
+    container_name: webarch-varnish
+    ports:
+        - "80:80"
+    volumes:
+      # varnish configurations
+      - ./environment/varnish/varnish.params:/etc/varnish/varnish.params:ro
+      - ./environment/varnish/default.vcl:/etc/varnish/default.vcl:ro
+    links:
+        - "nginx:nginx"
+
+  # web server
+  nginx:
+    restart: always
+    build: ./environment/nginx
+    container_name: webarch-nginx
+    ports:
+      - "8080:8080"
+      - "4433:4433"
+    volumes:
+      # app source
+      - ./src:/www
+      # nginx configs
+      - ./environment/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./environment/nginx/conf.d/:/etc/nginx/conf.d/:ro
+      # certificates
+      - ./environment/nginx/certificates:/etc/nginx/ssl:ro
+    links:
+      - php-fpm:php-fpm
+
+  # php-fpm
+  php-fpm:
+    restart: always
+    build: ./environment/php-fpm
+    container_name: webarch-php-pfm
+    ports:
+      - "9000"
+    volumes:
+      # app code
+      - ./src:/www
+      # php configuration file
+      - ./environment/php-fpm/php.ini:/usr/local/etc/php/php.ini:ro
+    # environment:
+      # Set your APP env variables here:
+      # - APP_KEY=
+      # - DB_HOST=
+      # - DB_DATABASE=
+      # - DB_USERNAME=
+      # - DB_PASSWORD=
+    links:
+      - mysql:mysql
+      - rabbitmq:rabbitmq
+
+  # database
+  mysql:
+    restart: always
+    build: ./environment/mysql
+    container_name: webarch-mysql
+    ports:
+      - "3306:3306"
+    volumes:
+      # data storage folder
+      - ./environment/mysql/data:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+
+  # message server
+  rabbitmq:
+    restart: always
+    build: ./environment/rabbitmq
+    container_name: webarch-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
