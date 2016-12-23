@@ -46,13 +46,6 @@ services:
       - ./src:/www
       # php configuration file
       - ./environment/php-fpm/php.ini:/usr/local/etc/php/php.ini:ro
-    # environment:
-      # Set your APP env variables here:
-      # - APP_KEY=
-      # - DB_HOST=
-      # - DB_DATABASE=
-      # - DB_USERNAME=
-      # - DB_PASSWORD=
     links:
       - mysql:mysql
       - rabbitmq:rabbitmq
