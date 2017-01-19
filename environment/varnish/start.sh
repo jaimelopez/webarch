@@ -1,3 +1,5 @@
+#!/bin/bash
+
 varnishd -F -u varnish \
   -f /etc/varnish/default.vcl \
   -s malloc,100m \
